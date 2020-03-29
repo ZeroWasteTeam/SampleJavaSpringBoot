@@ -55,7 +55,7 @@ jobs:
 
       - name: Push image
         run: |
-          IMAGE_ID=docker.pkg.github.com/nagachakith/samplebootgradle/$IMAGE_NAME
+          IMAGE_ID=docker.pkg.github.com/zerowasteteam/samplejavaspringboot/$IMAGE_NAME
 
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
