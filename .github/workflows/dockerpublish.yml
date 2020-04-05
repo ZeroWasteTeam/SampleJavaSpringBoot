@@ -53,19 +53,6 @@ jobs:
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
-      - name: Push image
-        run: |
-          IMAGE_ID=docker.pkg.github.com/zerowasteteam/samplejavaspringboot/$IMAGE_NAME
-
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-          # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
-          
       - name: If Repository Dispatch Checkout Sha
         if: github.event_name == 'repository_dispatch'
         run: git checkout -f "${{  github.event.client_payload.buildSha }}"
@@ -104,7 +91,7 @@ jobs:
       - name: Verify Last Version Change Is In Master
         run: ci-assertLastVersionChangeIsInBranch "origin/master"
 
-      - name: Get Release Version
+      - name: Get Release Version & Push Image
         run: |
           set -e
           RELEASE_VERSION=$(ci-getReleaseVersion ${CI_BASE_VERSION} ${CI_BUILD_BRANCH} ${CI_BUILD_SHA})
