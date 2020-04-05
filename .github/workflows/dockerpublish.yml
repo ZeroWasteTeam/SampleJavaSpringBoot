@@ -111,8 +111,8 @@ jobs:
           echo "::set-env name=CI_RELEASE_VERSION::${RELEASE_VERSION}"
  
 
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$CI_RELEASE_VERSION
+          echo IMAGE_ID=${IMAGE_ID}
+          echo VERSION=${CI_RELEASE_VERSION}
 
           docker tag image $IMAGE_ID:$CI_RELEASE_VERSION
           docker push $IMAGE_ID:$CI_RELEASE_VERSION
