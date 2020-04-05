@@ -97,11 +97,10 @@ jobs:
           RELEASE_VERSION=$(ci-getReleaseVersion ${CI_BASE_VERSION} ${CI_BUILD_BRANCH} ${CI_BUILD_SHA})
           echo "::set-env name=CI_RELEASE_VERSION::${RELEASE_VERSION}"
           IMAGE_ID=docker.pkg.github.com/zerowasteteam/samplejavaspringboot/$IMAGE_NAME
-          echo "${CI_RELEASE_VERSION}"
-          echo ${CI_RELEASE_VERSION}
+
 
           echo IMAGE_ID=${IMAGE_ID}
           echo VERSION=${RELEASE_VERSION}
 
-          docker tag image $IMAGE_ID:"${CI_RELEASE_VERSION}"
-          docker push $IMAGE_ID:"${CI_RELEASE_VERSION}"
+          docker tag image $IMAGE_ID:${RELEASE_VERSION}
+          docker push $IMAGE_ID:${RELEASE_VERSION}
