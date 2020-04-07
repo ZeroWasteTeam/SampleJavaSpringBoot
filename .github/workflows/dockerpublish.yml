@@ -74,8 +74,8 @@ jobs:
           set -e
           RELEASE_VERSION=$(ci-getReleaseVersion ${CI_BASE_VERSION} ${CI_BUILD_BRANCH} ${CI_BUILD_SHA})
           echo "::set-env name=CI_RELEASE_VERSION::${RELEASE_VERSION}"
-          IMAGE_ID=docker.pkg.github.com/$GITHUB_REPOSITORY/$IMAGE_NAME
-
+          REPOSITORY_NAME_IN_SMALL="$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]'
+          IMAGE_ID=docker.pkg.github.com/$REPOSITORY_NAME_IN_SMALL/$IMAGE_NAME
 
           echo IMAGE_ID=${IMAGE_ID}
           echo VERSION=${RELEASE_VERSION}
