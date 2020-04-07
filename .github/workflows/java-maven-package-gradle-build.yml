@@ -1,27 +1,20 @@
-name: Docker
+name: Docker Release Build
 
 on:
+  repository_dispatch:
+
   push:
     # Publish `master` as Docker `latest` image.
     branches:
-      - master
-
-    # Publish `v1.2.3` tags as releases.
-    tags:
-      - v*
-
-  # Run tests for any PRs.
-  pull_request:
-
+      - 'master'
+      - 'release*'
 env:
-  # TODO: Change variable to your image's name.
   IMAGE_NAME: springbootimage
 
 jobs:
-  push:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-
+  build-test-dockerize-version-publish:
+    name: Build Test Dockerize Version Publish
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
 
@@ -66,17 +59,20 @@ jobs:
           set -e
           BASE_VERSION=$(ci-readBaseVersion)
           echo "::set-env name=CI_BASE_VERSION::${BASE_VERSION}"
+
       - name: Verify Last Version Change Is In Master
         run: ci-assertLastVersionChangeIsInBranch "origin/master"
 
-      - name: Get Release Version & Push Image
+      - name: Get Release Version
         run: |
           set -e
           RELEASE_VERSION=$(ci-getReleaseVersion ${CI_BASE_VERSION} ${CI_BUILD_BRANCH} ${CI_BUILD_SHA})
           echo "::set-env name=CI_RELEASE_VERSION::${RELEASE_VERSION}"
+
+      - name: Docker Publish
+        run: |       
           REPOSITORY_NAME_IN_SMALL=$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
           IMAGE_ID=docker.pkg.github.com/$REPOSITORY_NAME_IN_SMALL/$IMAGE_NAME
-
           echo IMAGE_ID=${IMAGE_ID}
           echo VERSION=${RELEASE_VERSION}
 
