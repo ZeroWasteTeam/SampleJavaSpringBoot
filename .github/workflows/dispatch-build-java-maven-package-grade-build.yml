@@ -44,6 +44,6 @@ jobs:
           REPOSITORY_NAME_IN_SMALL=$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
           IMAGE_ID=docker.pkg.github.com/$REPOSITORY_NAME_IN_SMALL/$IMAGE_NAME
           echo IMAGE_ID=${IMAGE_ID}
-          echo VERSION=${steps.compute-release-version.outputs.version}
-          docker tag image $IMAGE_ID:${steps.compute-release-version.outputs.version}
-          docker push $IMAGE_ID:${steps.compute-release-version.outputs.version}
+          echo VERSION=${{ steps.compute-release-version.outputs.version}}
+          docker tag image $IMAGE_ID:${{ steps.compute-release-version.outputs.version}}
+          docker push $IMAGE_ID:${{ steps.compute-release-version.outputs.version}}
