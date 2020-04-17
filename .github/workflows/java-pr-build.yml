@@ -15,37 +15,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v1
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew 
-    - name: Making Custom Scripts As Executable
-      run: |
-        cd .github/scripts
-        echo "::set-env name=PATH::${PATH}:$(pwd)"
-        chmod +x *
-    - name: For Non Master Branch make sure version file is not modified
-      if: github.base_ref != 'master'
-      run: ci-assertVersionIsNotModified "origin/${{ github.base_ref }}" "${GITHUB_SHA}"
 
-    - name: For Master Branch verify version modification constraint
-      if: github.base_ref == 'master'
-      run: ci-assertVersioningRulesFollowed "origin/${{ github.base_ref }}" "${GITHUB_SHA}"
-
-    - name: Extract Base Version
-      if: github.base_ref == 'master'
-      run: echo "::set-env name=CI_BASE_VERSION::$(ci-readBaseVersion1 origin/${{ github.base_ref }})"
-
-    - name: Extract Modfied Version
-      if: github.base_ref == 'master'
-      run: echo "::set-env name=CI_MODIFIED_VERSION::$(ci-readBaseVersion1 ${GITHUB_SHA})"
-
-    - name: Verify version modification rules
-      if: github.base_ref == 'master'
-      run: ci-assertVersionIsEqualOrIncremented "${CI_BASE_VERSION}" "${CI_MODIFIED_VERSION}"   
+    - name: Validating versioning
+      uses: ZeroWasteTeam/actions/verify-pr-version@master
+      with:
+        base-branch:  ${{ github.base_ref }} 
+        merged-ref: ${{ github.sha }} 
+     
            
     - name: PR - Gradle Build
       run: gradle build
