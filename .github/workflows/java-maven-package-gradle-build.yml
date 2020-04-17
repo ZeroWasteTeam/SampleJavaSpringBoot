@@ -38,5 +38,5 @@ jobs:
           IMAGE_ID=docker.pkg.github.com/$REPOSITORY_NAME_IN_SMALL/$IMAGE_NAME
           echo IMAGE_ID=${{ steps.compute-release-version.outputs.version}}
 
-          docker tag image $IMAGE_ID:${CI_RELEASE_VERSION}
+          docker tag image $IMAGE_ID:${{ steps.compute-release-version.outputs.version}}
           docker push $IMAGE_ID:${{ steps.compute-release-version.outputs.version}}
