@@ -7,7 +7,7 @@ on:
     # Publish `master` as Docker `latest` image.
     branches:
       - 'master'
-      - 'release*'
+      - 'rel-*'
 env:
   IMAGE_NAME: springbootimage
 
@@ -16,7 +16,13 @@ jobs:
     name: Build Test Dockerize Version Publish
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
+        
+      - name: Get Release Version
+        id: compute-release-version
+        uses: ZeroWasteTeam/actions/compute-version@master
+        with:
+          build-branch:  ${{ github.ref }}
 
       - name: Build image
         run: docker build . --file Dockerfile --tag image
@@ -24,57 +30,13 @@ jobs:
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
-      - name: If Repository Dispatch Checkout Sha
-        if: github.event_name == 'repository_dispatch'
-        run: git checkout -f "${{  github.event.client_payload.buildSha }}"
-        
-      - name: Making Custom Scripts As Executable
-        run: |
-          cd .github/scripts
-          echo "::set-env name=PATH::${PATH}:$(pwd)"
-          chmod +x *
-    
-      - name: Setting the build sha variable
-        run: |
-          set -e
-          BUILD_SHA=$(git log  -n 1 --format=format:%H)
-          echo "::set-env name=CI_BUILD_SHA::${BUILD_SHA}"      
-        
-      - name:  Set build branch
-        run: |
-          set -e
-          if [[ ${{ github.event_name }} = 'repository_dispatch' ]] ;
-          then
-            BUILD_BRANCH="${{  github.event.client_payload.buildBranch }}"       
-          else
-            BUILD_BRANCH="${GITHUB_REF#refs/heads/}"
-          fi
-          echo "::set-env name=CI_BUILD_BRANCH::${BUILD_BRANCH}"
-
-      - name: Assert Commit is in the specified branch
-        run: ci-assertCommitInBranch "${CI_BUILD_SHA}" origin/"${CI_BUILD_BRANCH}"
-        
-      - name: Set Base Version
-        run: |
-          set -e
-          BASE_VERSION=$(ci-readBaseVersion)
-          echo "::set-env name=CI_BASE_VERSION::${BASE_VERSION}"
-
-      - name: Verify Last Version Change Is In Master
-        run: ci-assertLastVersionChangeIsInBranch "origin/master"
-
-      - name: Get Release Version
-        run: |
-          set -e
-          RELEASE_VERSION=$(ci-getReleaseVersion ${CI_BASE_VERSION} ${CI_BUILD_BRANCH} ${CI_BUILD_SHA})
-          echo "::set-env name=CI_RELEASE_VERSION::${RELEASE_VERSION}"
+      
 
       - name: Docker Publish
         run: |       
           REPOSITORY_NAME_IN_SMALL=$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
           IMAGE_ID=docker.pkg.github.com/$REPOSITORY_NAME_IN_SMALL/$IMAGE_NAME
-          echo IMAGE_ID=${IMAGE_ID}
-          echo VERSION=${RELEASE_VERSION}
+          echo IMAGE_ID=${{ steps.compute-release-version.outputs.version}}
 
           docker tag image $IMAGE_ID:${CI_RELEASE_VERSION}
-          docker push $IMAGE_ID:${CI_RELEASE_VERSION}
+          docker push $IMAGE_ID:${{ steps.compute-release-version.outputs.version}}
